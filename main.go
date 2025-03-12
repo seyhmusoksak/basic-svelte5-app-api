@@ -2,18 +2,21 @@ package main
 
 import (
 	"fmt"
-	"github.com/seyhmusoksak/to-do-api/database"
-	"github.com/seyhmusoksak/to-do-api/controller"
 	"github.com/gin-gonic/gin"
+	"github.com/joho/godotenv"
+	"github.com/seyhmusoksak/to-do-api/controller"
+	"github.com/seyhmusoksak/to-do-api/database"
 )
 
-
 func main() {
-
-	err := database.ConnectDB()
+	err := godotenv.Load()
+	if err != nil {
+		fmt.Println("Error loading .env file")
+		return
+	}
+	err = database.ConnectDB()
 	if err != nil {
 		fmt.Println("Failed to connect to database:", err)
-		return
 	}
 	r := gin.Default()
 	r.GET("/collections", controller.GetCollections)

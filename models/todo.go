@@ -6,7 +6,7 @@ import (
 
 type Todo struct {
 	ID          int       `json:"id" gorm:"primary_key"`
-	Name        string    `json:"name"`
+	Name        string    `json:"name" binding:"required"`
 	Description string    `json:"description"`
 	IsCompleted bool      `json:"is_completed"`
 	CreatedAt   time.Time `json:"created_at"`
