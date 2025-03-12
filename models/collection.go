@@ -7,7 +7,7 @@ import (
 
 type Collection struct {
 	ID		  int    `json:"id" gorm:"primary_key"`
-	Name	  string `json:"name"`
+	Name	  string `json:"name" binding:"required"`
 	CreatedAt  time.Time `json:"created_at"`
 	Description string    `json:"description"`
     IsCompleted bool      `json:"is_completed"`
