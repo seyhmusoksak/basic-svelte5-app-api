@@ -17,7 +17,10 @@ func ConnectDB() (error) {
 	if err != nil {
 		return err
 	}
-	db.AutoMigrate(&models.Collection{}, &models.Todo{})
+	err = db.AutoMigrate(&models.User{}, &models.Collection{}, &models.Tasks{})
+	if err != nil {
+		return err
+	}
 	DB = db
 	return nil
 }

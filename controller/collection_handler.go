@@ -2,64 +2,46 @@ package controller
 
 import (
 	"net/http"
+
 	"github.com/gin-gonic/gin"
 	"github.com/seyhmusoksak/to-do-api/database"
 	"github.com/seyhmusoksak/to-do-api/models"
 )
 
-func GetCollections(c *gin.Context) {
-	collections, err := models.GetAllCollections(database.DB)
+// func GetCollectionsByUserId(c *gin.Context) {
+// 	// Get user_id from the request
+// 	userId := c.Param("user_id")
+// 	var user []models.User
+
+// 	// Preloading the data
+// 	if err := database.DB.Preload("Tasks").Find(&user, userId).Error; err != nil {
+// 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+// 		return
+// 	}
+
+// 	c.JSON(http.StatusOK, user)
+// }
+
+func GetAllCollections(c *gin.Context) {
+	// Get all collections
+	var collections []models.Collection
+	err := database.DB.Preload("Tasks").Find(&collections).Error
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch collections"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 	c.JSON(http.StatusOK, collections)
 }
 
-func GetCollectionsByID(c *gin.Context) {
-	id := c.Param("id")
-	collection, err := models.GetCollectionByID(database.DB, id)
+func GetCollectionsByID (c *gin.Context) {
+	// Get collection_id from the request
+	Id := c.Param("id")
+	var collections []models.Collection
+	// Join data from tasks table
+	err := database.DB.Preload("Tasks").Find(&collections, Id).Error
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Collection not found"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusOK, collection)
-}
-
-func CreateCollection(c *gin.Context) {
-	var collection models.Collection
-	if err := c.ShouldBindJSON(&collection); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid input"})
-		return
-	}
-	newCollection, err := models.CreateCollection(database.DB, collection)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create collection"})
-		return
-	}
-	c.JSON(http.StatusCreated, newCollection)
-}
-
-func UpdateCollection(c *gin.Context) {
-	id := c.Param("id")
-	var collection models.Collection
-	if err := c.ShouldBindJSON(&collection); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid input"})
-		return
-	}
-	updatedCollection, err := models.UpdateCollection(database.DB, id, collection)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update collection"})
-		return
-	}
-	c.JSON(http.StatusOK, updatedCollection)
-}
-
-func DeleteCollection(c *gin.Context) {
-	id := c.Param("id")
-	if err := models.DeleteCollection(database.DB, id); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete collection"})
-		return
-	}
-	c.JSON(http.StatusNoContent, nil)
+	c.JSON(http.StatusOK, collections)
 }
