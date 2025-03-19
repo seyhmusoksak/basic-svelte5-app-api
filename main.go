@@ -20,9 +20,11 @@ func main() {
 	}
 	r := gin.Default()
 	// r.GET("/collections/:user_id", controller.GetCollectionsByUserId)
-	r.GET("/collections/:id", controller.GetCollectionsByID)
-	r.GET("/collections", controller.GetAllCollections)
+	// r.GET("/collections/:id", controller.GetCollectionsByID)
+	// r.GET("/collections", controller.GetAllCollections)
 	r.GET("/tasks", controller.GetAllTasks)
 	r.GET("/tasks/:id", controller.GetTaskById)
+	r.PATCH("/tasks/:id", controller.PatchTaskById)
+	r.POST("/tasks", controller.CreateTask)
 	r.Run(":8081")
 }

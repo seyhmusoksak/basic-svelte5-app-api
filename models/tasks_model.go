@@ -4,6 +4,8 @@ import (
 	"time"
 )
 
+
+
 type Tasks struct {
 	ID           int        `json:"id" gorm:"primary_key"`
 	Title        string     `json:"title" binding:"required" gorm:"not null"`
