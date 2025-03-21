@@ -11,3 +11,9 @@ type User struct {
 	Collections []Collection `json:"collections" gorm:"foreignKey:UserID"`
 	Tasks       []Tasks      `json:"tasks" gorm:"foreignKey:UserID"`
 }
+
+type UserResponse struct {
+	ID        int       `json:"id"`
+	Name      string    `json:"name"`
+	CreatedAt time.Time `json:"created_at"`
+}
