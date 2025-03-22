@@ -15,32 +15,30 @@ func NewUserRepository(db *gorm.DB) *UserRepository {
 	}
 }
 
-func (u *UserRepository) CreateUser(user interface{}) error {
-	err := u.DB.Create(user).Error
+func (u *UserRepository) CreateUser(user *models.User) error {
+	err := u.DB.Table("users").Omit("id").Create(&user).Error
 	if err != nil {
 		return err
 	}
+
 	return nil
 }
 
-func (u *UserRepository) CreateCollection(collection interface{}) error {
-	err := u.DB.Create(collection).Error
-	if err != nil {
-		return err
-	}
-	return nil
-}
+func (u *UserRepository) GetAllUsers() ([]models.UserResponse, error) {
 
-func (u *UserRepository) GetUserCollectionByID(userID int) (interface{}, error) {
-	var schema []models.Collection
-	err := u.DB.Preload("Tasks").Where("user_id = ?", userID).Find(&schema).Error
+	var schema []models.UserResponse
+
+	err := u.DB.Table("users").Find(&schema).Error
+
 	if err != nil {
 		return nil, err
 	}
+
 	return schema, nil
 }
 
-func (u *UserRepository) GetUser(userId string) (interface{}, error) {
+
+func (u *UserRepository) GetUserByID(userId int) (*models.UserResponse, error) {
 
 	var schema models.UserResponse
 
@@ -49,6 +47,29 @@ func (u *UserRepository) GetUser(userId string) (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	return schema, nil
+
+	return &schema, nil
 }
 
+func (u *UserRepository) UpdateUser(user models.UserUpdate, userId int) (*models.UserResponse, error) {
+	var schema models.UserResponse
+
+	err := u.DB.Table("users").Where("id = ?", userId).Updates(user).First(&schema).Error
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &schema, nil
+}
+
+
+func (u *UserRepository) DeleteUser(userId int) error {
+	err := u.DB.Table("users").Where("id = ?", userId).Delete(&models.User{}).Error
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

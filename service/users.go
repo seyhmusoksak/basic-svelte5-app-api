@@ -1,6 +1,9 @@
 package service
 
 import (
+	"time"
+
+	"github.com/seyhmusoksak/to-do-api/models"
 	"github.com/seyhmusoksak/to-do-api/repository"
 )
 
@@ -15,7 +18,9 @@ func NewUserService(repository *repository.UserRepository) *UserService {
 	}
 }
 
-func (s *UserService) CreateUser(user interface{}) error {
+func (s *UserService) CreateUser(user *models.User) error {
+	// Set Create Time
+	user.CreatedAt = time.Now()
 	err := s.userRepository.CreateUser(user)
 	if err != nil {
 		return err
@@ -23,25 +28,16 @@ func (s *UserService) CreateUser(user interface{}) error {
 	return nil
 }
 
-func (s *UserService) CreateCollection(collection interface{}) error {
-	err := s.userRepository.CreateCollection(collection)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func (s *UserService) GetUserCollectionByID(userID int) (interface{}, error) {
-	collection, err := s.userRepository.GetUserCollectionByID(userID)
+func (s *UserService) GetAllUsers() ([]models.UserResponse, error) {
+	users, err := s.userRepository.GetAllUsers()
 	if err != nil {
 		return nil, err
 	}
-	return collection, nil
+	return users, err
 }
 
-
-func (s *UserService) GetUser(userId string) (interface{}, error) {
-	user, err := s.userRepository.GetUser(userId)
+func (s *UserService) GetUserByID(userId int) (*models.UserResponse, error) {
+	user, err := s.userRepository.GetUserByID(userId)
 	if err != nil {
 		return nil, err
 	}
@@ -49,4 +45,18 @@ func (s *UserService) GetUser(userId string) (interface{}, error) {
 }
 
 
+func (s *UserService) UpdateUser(user models.UserUpdate, userId int) (*models.UserResponse, error) {
+	UpdatedUser, err := s.userRepository.UpdateUser(user, userId)
+	if err != nil {
+		return nil, err
+	}
+	return UpdatedUser, nil
+}
 
+func (s *UserService) DeleteUser(userId int) error {
+	err := s.userRepository.DeleteUser(userId)
+	if err != nil {
+		return err
+	}
+	return nil
+}

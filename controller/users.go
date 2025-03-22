@@ -10,12 +10,17 @@ import (
 )
 
 type UserController struct {
-	userService *service.UserService
+	userService        *service.UserService
+	collectionsService *service.CollectionsService
+	serviceTasks       *service.TasksService
 }
 
-func NewUserController(Service *service.UserService) *UserController {
+func NewUserController(userService *service.UserService,
+	collectionService *service.CollectionsService, tasksService *service.TasksService) *UserController {
 	return &UserController{
-		userService: Service,
+		userService:        userService,
+		collectionsService: collectionService,
+		serviceTasks:       tasksService,
 	}
 }
 
@@ -29,52 +34,91 @@ func (c *UserController) CreateUser(ctx *gin.Context) {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	ctx.JSON(http.StatusCreated, user)
+	ctx.JSON(http.StatusCreated, "User created successfully")
 }
 
-func (c *UserController) CreateCollection(ctx *gin.Context) {
-	var collection models.Collection
+func (c *UserController) GetAllUsers(ctx *gin.Context) {
+	users, err := c.userService.GetAllUsers()
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	ctx.JSON(http.StatusOK, users)
+}
 
-	if err := ctx.ShouldBindJSON(&collection); err != nil {
+func (c *UserController) GetUserByID(ctx *gin.Context) {
+
+	userId, err := strconv.Atoi(ctx.Param("id"))
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID"})
+	}
+	user, err := c.userService.GetUserByID(userId)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, user)
+}
+
+func (c *UserController) UpdateUser(ctx *gin.Context) {
+	var schema models.UserUpdate
+	if err := ctx.ShouldBindJSON(&schema); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 	userId, err := strconv.Atoi(ctx.Param("id"))
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user ID"})
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID"})
 		return
 	}
-	collection.UserID = userId
-	if err := c.userService.CreateCollection(&collection); err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-	ctx.JSON(http.StatusCreated, collection)
-}
-
-func (c *UserController) GetUser(ctx *gin.Context) {
-	userId := ctx.Param("id")
-	user, err := c.userService.GetUser(userId)
+	updatedUser, err := c.userService.UpdateUser(schema, userId)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	ctx.JSON(http.StatusOK, user)
+	ctx.JSON(http.StatusOK, updatedUser)
 }
 
-func (c *UserController) GetUserCollectionByID(ctx *gin.Context) {
-	userID, err := strconv.Atoi(ctx.Param("id"))
+func (c *UserController) DeleteUser(ctx *gin.Context) {
+	userId, err := strconv.Atoi(ctx.Param("id"))
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid collection ID"})
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID"})
 		return
 	}
-	collection, err := c.userService.GetUserCollectionByID(userID)
+	err = c.userService.DeleteUser(userId)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	ctx.JSON(http.StatusOK, collection)
+	ctx.JSON(http.StatusOK, "User deleted successfully")
+}
+
+func (c *UserController) GetUserCollectionsByID(ctx *gin.Context) {
+	userId, err := strconv.Atoi(ctx.Param("id"))
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID"})
+		return
+	}
+	collections, err := c.collectionsService.GetUserCollectionsByID(userId)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	ctx.JSON(http.StatusOK, collections)
 }
 
 
-
+func (c *UserController) GetUserTasksByID(ctx *gin.Context) {
+	userId, err := strconv.Atoi(ctx.Param("id"))
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID"})
+		return
+	}
+	tasks, err := c.serviceTasks.GetUserTasksByID(userId)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	ctx.JSON(http.StatusOK, tasks)
+}

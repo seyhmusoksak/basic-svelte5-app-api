@@ -21,14 +21,24 @@ func main() {
 		fmt.Println("Failed to connect to database:", err)
 	}
 
+	tasksRepository := repository.NewTasksRepository(database.DB)
+	tasksService := service.NewTasksService(tasksRepository)
+	tasksController := controller.NewTasksController(tasksService)
+
+	collectionsRepository := repository.NewCollectionsRepository(database.DB)
+	collectionsService := service.NewCollectionsService(collectionsRepository)
+	collectionsController := controller.NewCollectionsController(collectionsService)
+
 	userRepository := repository.NewUserRepository(database.DB)
 	userService := service.NewUserService(userRepository)
-	userController := controller.NewUserController(userService)
+	userController := controller.NewUserController(userService, collectionsService, tasksService)
 
 	r := gin.Default()
-	r.GET("/users/:id", userController.GetUser)
-	r.POST("/users", userController.CreateUser)
-	r.POST("/users/:id/collections", userController.CreateCollection)
-	r.GET("/users/:id/collections", userController.GetUserCollectionByID)
+	r.GET("/users/:id", userController.GetUserByID)
+	r.GET("/users", userController.GetAllUsers)
+	r.GET("/users/:id/tasks", userController.GetUserTasksByID)
+	r.GET("/users/:id/collections", userController.GetUserCollectionsByID)
+	r.GET("/tasks", tasksController.GetAllTasks)
+	r.GET("/collections", collectionsController.GetAllCollections)
 	r.Run(":8081")
 }
